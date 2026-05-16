@@ -5,10 +5,10 @@ This file defines how AI agents and human maintainers should work in `repocapsul
 ## Project Context
 
 - Project: `repocapsule`
-- Repository: ``
-- Primary maintainer: ``
-- Default branch: ``
-- Package manager: ``
+- Repository: `rogerchappel/repocapsule`
+- Primary maintainer: `Roger Chappel`
+- Default branch: `main`
+- Package manager: `npm`
 - Primary verification command: `bash scripts/validate.sh`
 
 ## Core Principle
@@ -17,8 +17,8 @@ Move quickly, but keep every change reviewable, reversible, verifiable, and safe
 
 ## Branch Policy
 
-- Work on a branch for all repository changes.
-- Branch from the latest `` before editing.
+- Work on a branch for repository changes unless the maintainer explicitly requests direct commits to main.
+- Branch from the latest `main` before editing.
 - Do not merge without explicit maintainer approval.
 - Do not rewrite shared history unless explicitly instructed.
 
@@ -172,5 +172,4 @@ Stop and ask before touching:
 Never commit secrets. Never mutate production data unless explicitly instructed.
 
 ## Repository-Specific Notes
-
 
