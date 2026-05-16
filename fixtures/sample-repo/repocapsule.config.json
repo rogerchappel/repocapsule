@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "include": ["package.json", "src/**", "tests/**", "README.md"],
+  "exclude": [],
+  "maxFileBytes": 4096,
+  "allowHomePaths": false,
+  "commands": ["node -e \"console.log('fixture ok')\""]
+}
