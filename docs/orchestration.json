@@ -1,0 +1,26 @@
+{
+  "name": "repocapsule",
+  "version": 1,
+  "defaultBranch": "main",
+  "localFirst": true,
+  "networkRequired": false,
+  "commands": {
+    "init": "repocapsule init",
+    "scan": "repocapsule scan --markdown .repocapsule/report.md",
+    "record": "repocapsule record --cmd \"npm test\"",
+    "report": "repocapsule report",
+    "doctor": "repocapsule doctor"
+  },
+  "verification": [
+    "npm test",
+    "npm run check",
+    "npm run build",
+    "npm run smoke",
+    "bash scripts/validate.sh"
+  ],
+  "safety": {
+    "redactionDefault": true,
+    "uploadsByDefault": false,
+    "ignoredByDefault": [".git", "node_modules", "dist", "build", "coverage", ".env"]
+  }
+}
