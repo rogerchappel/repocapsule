@@ -7,5 +7,5 @@ test('redacts common token patterns and counts by kind', () => {
 
   assert.equal(result.text.includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
   assert.equal(result.text.includes('Bearer abcdefghijklmnopqrstuvwxyz123456'), false);
-  assert.deepEqual(result.redactions.map((item) => item.kind), ['assignment-secret', 'bearer-token']);
+  assert.deepEqual(result.redactions.map((item) => item.kind), ['assignment-secret', 'bearer-token', 'github-token']);
 });
