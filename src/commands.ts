@@ -16,7 +16,7 @@ export async function collectCommandLogs(root: string, commands: string[], allow
       exitCode: result.exitCode,
       stdout: stdout.text,
       stderr: stderr.text,
-      durationMs: result.durationMs
+      durationMs: 0
     });
   }
 
