@@ -12,6 +12,11 @@
       ],
       [
         "npm",
+        "run",
+        "smoke"
+      ],
+      [
+        "npm",
         "pack",
         "--dry-run"
       ]
