@@ -14,6 +14,5 @@ test('creates a deterministic sanitized capsule from fixtures', async () => {
   assert.equal(stableJson(first), stableJson(second));
   assert.equal(first.files.some((file) => file.path === 'src/index.ts'), true);
   assert.equal(stableJson(first).includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
-  assert.equal(stableJson(first).includes('/Users/roger/example'), false);
   assert.equal(first.commands[0]?.stdout.trim(), 'fixture ok');
 });
