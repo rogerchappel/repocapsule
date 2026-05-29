@@ -15,7 +15,7 @@ npm link
 Or run directly from a checkout:
 
 ~~~sh
-node dist/cli.js --help
+node dist/src/cli.js --help
 ~~~
 
 ## Quickstart

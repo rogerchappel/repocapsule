@@ -3,16 +3,22 @@
   "version": "0.1.0",
   "description": "Sanitized deterministic repo capsule generator for bug reports and agent debugging.",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
   },
   "bin": {
-    "repocapsule": "./dist/cli.js"
+    "repocapsule": "./dist/src/cli.js"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "SECURITY.md"
   ],
   "scripts": {
     "build": "tsc",
@@ -20,7 +26,7 @@
     "test": "npm run build && node --test dist/**/*.test.js",
     "smoke": "npm run build && bash tests/cli-smoke.sh",
     "package:smoke": "npm pack --dry-run",
-    "release:check": "npm test && npm run smoke && npm run package:smoke"
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
   },
   "keywords": [
     "bug-report",
@@ -33,6 +39,14 @@
   ],
   "author": "Roger Chappel",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/repocapsule.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/repocapsule/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/repocapsule#readme",
   "engines": {
     "node": ">=20"
   },
