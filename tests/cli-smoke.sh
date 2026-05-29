@@ -7,9 +7,9 @@ trap 'rm -rf "$tmp_dir"' EXIT
 
 cp -R "$repo_root/fixtures/sample-repo/." "$tmp_dir/"
 
-node "$repo_root/dist/cli.js" doctor --root "$tmp_dir" >/dev/null
-node "$repo_root/dist/cli.js" scan --root "$tmp_dir" --output capsule.json --markdown report.md >/dev/null
-node "$repo_root/dist/cli.js" report --root "$tmp_dir" --input capsule.json --output report-again.md >/dev/null
+node "$repo_root/dist/src/cli.js" doctor --root "$tmp_dir" >/dev/null
+node "$repo_root/dist/src/cli.js" scan --root "$tmp_dir" --output capsule.json --markdown report.md >/dev/null
+node "$repo_root/dist/src/cli.js" report --root "$tmp_dir" --input capsule.json --output report-again.md >/dev/null
 
 test -s "$tmp_dir/capsule.json"
 test -s "$tmp_dir/report.md"
