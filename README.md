@@ -39,6 +39,8 @@ Use a different repository root:
 repocapsule scan --root ../some-project --output /tmp/some-project-capsule.json
 ~~~
 
+See [examples/bug-report-capsule.md](examples/bug-report-capsule.md) for a maintainer-facing workflow that captures a failing command and reviews the generated files before sharing.
+
 ## What It Captures
 
 - Git branch, HEAD, status, and remotes when git is available.
@@ -94,6 +96,7 @@ npm test
 npm run check
 npm run build
 npm run smoke
+npm run package:smoke
 bash scripts/validate.sh
 ~~~
 
