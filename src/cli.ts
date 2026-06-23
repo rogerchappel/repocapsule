@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createCapsule, stableJson } from './capsule.js';
 import { CONFIG_FILE, loadConfig, writeDefaultConfig } from './config.js';
 import { renderMarkdown } from './markdown.js';
@@ -150,6 +152,7 @@ function printHelp(): void {
   ].join('\n'));
 }
 
-if (import.meta.url === 'file://' + process.argv[1]) {
+const invokedPath = process.argv[1];
+if (invokedPath && realpathSync(fileURLToPath(import.meta.url)) === realpathSync(invokedPath)) {
   process.exitCode = await main();
 }

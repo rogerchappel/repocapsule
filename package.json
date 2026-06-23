@@ -15,7 +15,8 @@
     "repocapsule": "./dist/src/cli.js"
   },
   "files": [
-    "dist",
+    "dist/src",
+    "fixtures/sample-repo",
     "README.md",
     "LICENSE",
     "SECURITY.md",
@@ -27,7 +28,7 @@
     "check": "tsc --noEmit",
     "test": "npm run build && node --test dist/**/*.test.js",
     "smoke": "npm run build && bash tests/cli-smoke.sh",
-    "package:smoke": "npm pack --dry-run",
+    "package:smoke": "bash scripts/package-smoke.sh",
     "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
   },
   "keywords": [
