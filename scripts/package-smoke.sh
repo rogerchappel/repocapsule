@@ -9,6 +9,7 @@ cd "$repo_root"
 npm run build >/dev/null
 pack_json="$(npm pack --json --pack-destination "$tmp_dir")"
 tarball="$(node -e "const data = JSON.parse(process.argv[1]); console.log(data[0].filename)" "$pack_json")"
+node -e "const data = JSON.parse(process.argv[1]); const files = new Set(data[0].files.map((file) => file.path)); for (const required of ['dist/src/cli.js', 'dist/src/index.js', 'examples/bug-report-capsule.md', 'fixtures/sample-repo/package.json']) { if (!files.has(required)) { console.error('Missing package file: ' + required); process.exit(1); } }" "$pack_json"
 
 mkdir -p "$tmp_dir/app"
 cd "$tmp_dir/app"
