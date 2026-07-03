@@ -41,6 +41,19 @@ repocapsule scan --root ../some-project --output /tmp/some-project-capsule.json
 
 See [examples/bug-report-capsule.md](examples/bug-report-capsule.md) for a maintainer-facing workflow that captures a failing command and reviews the generated files before sharing.
 
+## Demo
+
+Run the checked-in fixture demo to generate both JSON and Markdown reports in a
+temporary workspace:
+
+~~~sh
+bash demo/run-sample-capsule.sh
+~~~
+
+The walkthrough in [docs/tutorials/sanitized-bug-report.md](docs/tutorials/sanitized-bug-report.md)
+explains the same flow step by step. Promotion drafts for a short video or
+social thread live in [docs/promo/social-hooks.md](docs/promo/social-hooks.md).
+
 ## What It Captures
 
 - Git branch, HEAD, status, and remotes when git is available.
