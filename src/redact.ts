@@ -8,11 +8,15 @@ type Pattern = {
 };
 
 const SECRET_PATTERNS: Pattern[] = [
-  { kind: 'github-token', regex: /gh[pousr]_[A-Za-z0-9_]{20,}/g, replacement: '[REDACTED:github-token]' },
+  { kind: 'github-token', regex: /(?:gh[pousr]|github_pat)_[A-Za-z0-9_]{20,}/g, replacement: '[REDACTED:github-token]' },
   { kind: 'openai-key', regex: /sk-[A-Za-z0-9_-]{20,}/g, replacement: '[REDACTED:openai-key]' },
   { kind: 'aws-access-key', regex: /AKIA[0-9A-Z]{16}/g, replacement: '[REDACTED:aws-access-key]' },
   { kind: 'bearer-token', regex: /Bearer\s+[A-Za-z0-9._~+/=-]{20,}/gi, replacement: 'Bearer [REDACTED:bearer-token]' },
-  { kind: 'assignment-secret', regex: /\b(?:api[_-]?key|token|secret|password)\s*=\s*[^\s'"]+/gi, replacement: '[REDACTED:assignment-secret]' }
+  {
+    kind: 'assignment-secret',
+    regex: /\b(?:api[_-]?key|token|secret|password)\s*=\s*(?:"(?:\\.|[^"\\\r\n])+"|'(?:\\.|[^'\\\r\n])+'|[^\s'"]+)/gi,
+    replacement: '[REDACTED:assignment-secret]'
+  }
 ];
 
 export function redactText(input: string, allowHomePaths = false): { text: string; redactions: Redaction[] } {
