@@ -12,6 +12,7 @@ type ParsedArgs = {
   command: string;
   flags: Map<string, string[]>;
   positionals: string[];
+  delimiterFound: boolean;
 };
 
 export async function main(argv = process.argv.slice(2)): Promise<number> {
@@ -45,12 +46,18 @@ function parseArgs(argv: string[]): ParsedArgs {
   const flags = new Map<string, string[]>();
   const positionals: string[] = [];
   let command = '';
+  let delimiterFound = false;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index]!;
     if (!command && !arg.startsWith('-')) {
       command = arg;
       continue;
+    }
+    if (arg === '--') {
+      delimiterFound = true;
+      positionals.push(...argv.slice(index + 1));
+      break;
     }
     if (arg.startsWith('--')) {
       const [rawKey, inlineValue] = arg.slice(2).split('=', 2);
@@ -62,7 +69,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     }
   }
 
-  return { command, flags, positionals };
+  return { command, flags, positionals, delimiterFound };
 }
 
 async function initCommand(args: ParsedArgs): Promise<number> {
@@ -78,8 +85,11 @@ async function scanCommand(args: ParsedArgs, includeCommandPositionals: boolean)
   const output = flag(args, 'output') ?? '.repocapsule/capsule.json';
   const markdown = flag(args, 'markdown');
   const commands = flags(args, 'cmd');
-  if (includeCommandPositionals && args.positionals.length > 0) {
-    commands.push(args.positionals.join(' '));
+  if (includeCommandPositionals) {
+    if (!args.delimiterFound || args.positionals.length === 0) {
+      throw new Error('record requires a command after --');
+    }
+    commands.push(shellCommand(args.positionals));
   }
 
   const capsule = await createCapsule({
@@ -138,6 +148,10 @@ function flags(args: ParsedArgs, name: string): string[] {
   return [...(args.flags.get(name) ?? [])].filter((value) => value !== 'true');
 }
 
+function shellCommand(argv: string[]): string {
+  return argv.map((arg) => "'" + arg.replaceAll("'", "'\\''") + "'").join(' ');
+}
+
 function printHelp(): void {
   console.log([
     'repocapsule ' + VERSION,
@@ -145,7 +159,7 @@ function printHelp(): void {
     'Usage:',
     '  repocapsule init [--root DIR]',
     '  repocapsule scan [--root DIR] [--output FILE] [--markdown FILE] [--cmd COMMAND]',
-    '  repocapsule record [--root DIR] [--output FILE] -- COMMAND',
+    '  repocapsule record [--root DIR] [--output FILE] [--markdown FILE] -- COMMAND [ARGS...]',
     '  repocapsule report [--root DIR] [--input FILE] [--output FILE]',
     '  repocapsule doctor [--root DIR]',
     ''

@@ -7,7 +7,7 @@
   "commands": {
     "init": "repocapsule init",
     "scan": "repocapsule scan --markdown .repocapsule/report.md",
-    "record": "repocapsule record --cmd \"npm test\"",
+    "record": "repocapsule record -- npm test",
     "report": "repocapsule report",
     "doctor": "repocapsule doctor"
   },
