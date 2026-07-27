@@ -33,6 +33,13 @@ Capture a failing command log:
 repocapsule scan --cmd "npm test" --markdown .repocapsule/report.md
 ~~~
 
+Or record a command directly. Everything after `--` is passed to that command,
+including flags and arguments:
+
+~~~sh
+repocapsule record --output .repocapsule/capsule.json -- npm test -- --runInBand
+~~~
+
 Use a different repository root:
 
 ~~~sh

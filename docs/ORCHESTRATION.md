@@ -8,7 +8,8 @@ RepoCapsule is local-first. Agents and maintainers should run it inside the repo
 2. Edit include and exclude patterns until the capsule contains only relevant files.
 3. Run repocapsule scan --markdown .repocapsule/report.md.
 4. Review .repocapsule/capsule.json and .repocapsule/report.md before sharing.
-5. Use repocapsule record --cmd "npm test" when a failing command log is useful.
+5. Use `repocapsule record -- npm test` when a failing command log is useful.
+   Arguments and flags after `--` belong to the recorded command.
 
 ## Safety Rules
 
