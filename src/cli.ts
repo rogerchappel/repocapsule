@@ -16,19 +16,19 @@ type ParsedArgs = {
 };
 
 export async function main(argv = process.argv.slice(2)): Promise<number> {
-  const args = parseArgs(argv);
-
-  if (args.flags.has('help') || !args.command) {
-    printHelp();
-    return 0;
-  }
-
-  if (args.flags.has('version')) {
-    console.log(VERSION);
-    return 0;
-  }
-
   try {
+    const args = parseArgs(argv);
+
+    if (args.flags.has('version')) {
+      console.log(VERSION);
+      return 0;
+    }
+
+    if (args.flags.has('help') || !args.command) {
+      printHelp();
+      return 0;
+    }
+
     if (args.command === 'init') return await initCommand(args);
     if (args.command === 'scan') return await scanCommand(args, false);
     if (args.command === 'record') return await scanCommand(args, true);
@@ -41,6 +41,9 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     return 1;
   }
 }
+
+const BOOLEAN_OPTIONS = new Set(['help', 'version']);
+const VALUE_OPTIONS = new Set(['root', 'input', 'output', 'markdown', 'cmd']);
 
 function parseArgs(argv: string[]): ParsedArgs {
   const flags = new Map<string, string[]>();
@@ -62,8 +65,15 @@ function parseArgs(argv: string[]): ParsedArgs {
     if (arg.startsWith('--')) {
       const [rawKey, inlineValue] = arg.slice(2).split('=', 2);
       const key = rawKey!;
-      const value = inlineValue ?? (argv[index + 1] && !argv[index + 1]!.startsWith('-') ? argv[++index] : 'true');
-      flags.set(key, [...(flags.get(key) ?? []), value!]);
+      if (BOOLEAN_OPTIONS.has(key)) {
+        if (inlineValue !== undefined) throw new Error(`Option --${key} does not take a value`);
+        flags.set(key, [...(flags.get(key) ?? []), 'true']);
+        continue;
+      }
+      if (!VALUE_OPTIONS.has(key)) throw new Error(`Unknown option: --${key}`);
+      const value = inlineValue ?? (argv[index + 1] && !argv[index + 1]!.startsWith('-') ? argv[++index] : undefined);
+      if (!value) throw new Error(`Option --${key} requires a value`);
+      flags.set(key, [...(flags.get(key) ?? []), value]);
     } else {
       positionals.push(arg);
     }
