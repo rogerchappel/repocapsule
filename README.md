@@ -46,6 +46,20 @@ Use a different repository root:
 repocapsule scan --root ../some-project --output /tmp/some-project-capsule.json
 ~~~
 
+## Command Line
+
+~~~text
+repocapsule init [--root DIR]
+repocapsule scan [--root DIR] [--output FILE] [--markdown FILE] [--cmd COMMAND]
+repocapsule record [--root DIR] [--output FILE] [--markdown FILE] -- COMMAND [ARGS...]
+repocapsule report [--root DIR] [--input FILE] [--output FILE]
+repocapsule doctor [--root DIR]
+repocapsule --help
+repocapsule --version
+~~~
+
+Options are command-specific. The `record` command is the only command that accepts positional arguments; place its command and arguments after `--`.
+
 See [examples/bug-report-capsule.md](examples/bug-report-capsule.md) for a maintainer-facing workflow that captures a failing command and reviews the generated files before sharing.
 
 ## Demo

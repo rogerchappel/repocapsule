@@ -13,11 +13,13 @@ type ParsedArgs = {
   flags: Map<string, string[]>;
   positionals: string[];
   delimiterFound: boolean;
+  preDelimiterPositionals: number;
 };
 
 export async function main(argv = process.argv.slice(2)): Promise<number> {
   try {
     const args = parseArgs(argv);
+    validateArgs(args);
 
     if (args.flags.has('version')) {
       console.log(VERSION);
@@ -44,12 +46,20 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
 
 const BOOLEAN_OPTIONS = new Set(['help', 'version']);
 const VALUE_OPTIONS = new Set(['root', 'input', 'output', 'markdown', 'cmd']);
+const COMMAND_OPTIONS = new Map([
+  ['init', new Set(['root'])],
+  ['scan', new Set(['root', 'output', 'markdown', 'cmd'])],
+  ['record', new Set(['root', 'output', 'markdown'])],
+  ['report', new Set(['root', 'input', 'output'])],
+  ['doctor', new Set(['root'])]
+]);
 
 function parseArgs(argv: string[]): ParsedArgs {
   const flags = new Map<string, string[]>();
   const positionals: string[] = [];
   let command = '';
   let delimiterFound = false;
+  let preDelimiterPositionals = 0;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index]!;
@@ -76,10 +86,37 @@ function parseArgs(argv: string[]): ParsedArgs {
       flags.set(key, [...(flags.get(key) ?? []), value]);
     } else {
       positionals.push(arg);
+      preDelimiterPositionals += 1;
     }
   }
 
-  return { command, flags, positionals, delimiterFound };
+  return { command, flags, positionals, delimiterFound, preDelimiterPositionals };
+}
+
+function validateArgs(args: ParsedArgs): void {
+  if (!args.command) {
+    if (args.positionals.length > 0) throw new Error(`Unexpected argument: ${args.positionals[0]}`);
+    return;
+  }
+
+  const allowedOptions = COMMAND_OPTIONS.get(args.command);
+  if (!allowedOptions) throw new Error('Unknown command: ' + args.command);
+
+  for (const option of args.flags.keys()) {
+    if (!BOOLEAN_OPTIONS.has(option) && !allowedOptions.has(option)) {
+      throw new Error(`Option --${option} is not valid for ${args.command}`);
+    }
+  }
+
+  if (args.command !== 'record' && args.delimiterFound) {
+    throw new Error(`Command ${args.command} does not accept --`);
+  }
+  if (args.command !== 'record' && args.positionals.length > 0) {
+    throw new Error(`Unexpected argument for ${args.command}: ${args.positionals[0]}`);
+  }
+  if (args.command === 'record' && args.preDelimiterPositionals > 0) {
+    throw new Error(`Unexpected argument for record before --: ${args.positionals[0]}`);
+  }
 }
 
 async function initCommand(args: ParsedArgs): Promise<number> {

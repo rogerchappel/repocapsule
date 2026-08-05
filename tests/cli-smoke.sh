@@ -28,8 +28,24 @@ for option in root output cmd; do
 done
 expect_failure 'Option --root requires a value' doctor --root=
 
+expect_failure 'Option --output is not valid for doctor' doctor --output ignored.json
+expect_failure 'Option --input is not valid for init' init --root "$tmp_dir/init-target" --input ignored.json
+expect_failure 'Option --cmd is not valid for report' report --cmd 'printf ignored'
+expect_failure 'Option --input is not valid for scan' scan --input ignored.json
+expect_failure 'Option --cmd is not valid for record' record --cmd 'printf ignored' -- printf valid
+expect_failure 'Unexpected argument for doctor: unexpected' doctor unexpected
+expect_failure 'Unexpected argument for init: unexpected' init unexpected
+expect_failure 'Unexpected argument for scan: unexpected' scan unexpected
+expect_failure 'Unexpected argument for report: unexpected' report unexpected
+expect_failure 'Command scan does not accept --' scan -- printf unexpected
+expect_failure 'Unexpected argument for record before --: unexpected' record unexpected -- printf valid
+
+test ! -e "$tmp_dir/ignored.json"
+test ! -e "$tmp_dir/init-target/repocapsule.config.json"
+
 node "$repo_root/dist/src/cli.js" --help | grep -q '^Usage:'
 node "$repo_root/dist/src/cli.js" --version | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+'
+node "$repo_root/dist/src/cli.js" scan --help | grep -q '^Usage:'
 
 node "$repo_root/dist/src/cli.js" doctor --root "$tmp_dir" >/dev/null
 node "$repo_root/dist/src/cli.js" scan --root="$tmp_dir" --output=capsule.json --markdown=report.md \
