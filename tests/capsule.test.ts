@@ -11,6 +11,11 @@ test('creates a deterministic sanitized capsule from fixtures', async () => {
   const first = await createCapsule({ root: fixtureRoot, config });
   const second = await createCapsule({ root: fixtureRoot, config });
 
+  assert.equal(first.commands.every((command) => command.durationMs > 0), true);
+  assert.equal(second.commands.every((command) => command.durationMs > 0), true);
+  for (const command of [...first.commands, ...second.commands]) {
+    command.durationMs = 0;
+  }
   assert.equal(stableJson(first), stableJson(second));
   assert.equal(first.files.some((file) => file.path === 'src/index.ts'), true);
   assert.equal(stableJson(first).includes('ghp_abcdefghijklmnopqrstuvwxyz123456'), false);
