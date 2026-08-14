@@ -85,12 +85,13 @@ social thread live in [docs/promo/social-hooks.md](docs/promo/social-hooks.md).
 
 ## JSON Output
 
-Capsules are deterministic by design:
+Capsules use a stable schema with a clear stability contract:
 
 - Object keys are sorted before writing.
 - File traversal and arrays are sorted.
-- generatedAt is fixed in the MVP so repeated scans can be diffed.
-- Command duration is normalized to 0 because wall-clock timing is not reproducible.
+- `generatedAt` is fixed (`1970-01-01T00:00:00.000Z`) so repeated scans can be diffed.
+- Git facts, package metadata, file SHA-256 hashes, and redacted content are fully deterministic for the same input.
+- Command durations (`durationMs`) are measured at runtime using wall-clock time; they are always positive but vary between captures.
 
 The default output path is .repocapsule/capsule.json. Markdown reports can be generated alongside JSON with --markdown or later with repocapsule report.
 
