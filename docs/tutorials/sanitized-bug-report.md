@@ -36,4 +36,4 @@ RepoCapsule is designed to make review easier, not to replace human review.
 - Default excludes avoid `.git`, `node_modules`, build output, caches, and
   `.repocapsule` output directories.
 - Secret-like fixture content is redacted before the script succeeds.
-- The JSON stays deterministic so repeated captures can be diffed.
+- Repeated captures keep the same structure, file hashes, and redacted content; only `durationMs` (wall-clock timing of captured commands) changes between runs.
