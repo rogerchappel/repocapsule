@@ -43,8 +43,13 @@ export async function loadConfig(root: string): Promise<CapsuleConfig> {
   const configPath = path.join(root, CONFIG_FILE);
   try {
     const raw = await readFile(configPath, 'utf8');
-    const parsed = JSON.parse(raw) as Partial<CapsuleConfig>;
-    return normalizeConfig(parsed);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (error) {
+      throw new Error(`${configPath}: invalid JSON: ${(error as Error).message}`);
+    }
+    return normalizeConfig(parsed, configPath);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return DEFAULT_CONFIG;
@@ -59,15 +64,59 @@ export async function writeDefaultConfig(root: string): Promise<string> {
   return configPath;
 }
 
-export function normalizeConfig(input: Partial<CapsuleConfig>): CapsuleConfig {
+export function normalizeConfig(input: unknown, configPath = CONFIG_FILE): CapsuleConfig {
+  if (!isRecord(input)) {
+    throw configError(configPath, 'configuration must be a JSON object');
+  }
+
+  if (input.schemaVersion !== undefined && input.schemaVersion !== 1) {
+    throw configError(configPath, 'schemaVersion must be 1');
+  }
+  const include = stringArray(input, 'include', configPath);
+  const exclude = stringArray(input, 'exclude', configPath);
+  const commands = stringArray(input, 'commands', configPath);
+  if (input.maxFileBytes !== undefined &&
+      (typeof input.maxFileBytes !== 'number' || !Number.isFinite(input.maxFileBytes) || input.maxFileBytes <= 0)) {
+    throw configError(configPath, 'maxFileBytes must be a positive finite number');
+  }
+  if (input.allowHomePaths !== undefined && typeof input.allowHomePaths !== 'boolean') {
+    throw configError(configPath, 'allowHomePaths must be a boolean');
+  }
+
   return {
     schemaVersion: 1,
-    include: input.include?.length ? [...input.include] : [...DEFAULT_CONFIG.include],
-    exclude: input.exclude?.length ? [...DEFAULT_CONFIG.exclude, ...input.exclude] : [...DEFAULT_CONFIG.exclude],
-    maxFileBytes: Number.isFinite(input.maxFileBytes) && input.maxFileBytes! > 0
-      ? Math.floor(input.maxFileBytes!)
-      : DEFAULT_CONFIG.maxFileBytes,
-    allowHomePaths: Boolean(input.allowHomePaths),
-    commands: input.commands ? [...input.commands] : [...DEFAULT_CONFIG.commands]
+    include: include ?? [...DEFAULT_CONFIG.include],
+    exclude: exclude ? [...DEFAULT_CONFIG.exclude, ...exclude] : [...DEFAULT_CONFIG.exclude],
+    maxFileBytes: input.maxFileBytes === undefined
+      ? DEFAULT_CONFIG.maxFileBytes
+      : Math.floor(input.maxFileBytes as number),
+    allowHomePaths: input.allowHomePaths === undefined ? DEFAULT_CONFIG.allowHomePaths : input.allowHomePaths as boolean,
+    commands: commands ?? [...DEFAULT_CONFIG.commands]
   };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function stringArray(
+  input: Record<string, unknown>,
+  field: 'include' | 'exclude' | 'commands',
+  configPath: string
+): string[] | undefined {
+  const value = input[field];
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) {
+    throw configError(configPath, `${field} must be an array of strings`);
+  }
+  for (const [index, item] of value.entries()) {
+    if (typeof item !== 'string') {
+      throw configError(configPath, `${field}[${index}] must be a string`);
+    }
+  }
+  return [...value] as string[];
+}
+
+function configError(configPath: string, message: string): Error {
+  return new Error(`${configPath}: ${message}`);
 }
