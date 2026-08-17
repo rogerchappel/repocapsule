@@ -24,3 +24,13 @@ cp -R "$repo_root/fixtures/sample-repo/." "$tmp_dir/sample-repo/"
 ./node_modules/.bin/repocapsule scan --root "$tmp_dir/sample-repo" --output capsule.json --markdown report.md >/dev/null
 test -s "$tmp_dir/sample-repo/capsule.json"
 test -s "$tmp_dir/sample-repo/report.md"
+
+mkdir -p "$tmp_dir/malformed-repo"
+printf '%s\n' '{"include":{"pattern":"README.md"}}' >"$tmp_dir/malformed-repo/repocapsule.config.json"
+if ./node_modules/.bin/repocapsule scan --root "$tmp_dir/malformed-repo" \
+  --output capsule.json >"$tmp_dir/malformed.stdout" 2>"$tmp_dir/malformed.stderr"; then
+  echo "installed CLI accepted malformed configuration" >&2
+  exit 1
+fi
+grep -F 'repocapsule.config.json: include must be an array of strings' "$tmp_dir/malformed.stderr" >/dev/null
+test ! -e "$tmp_dir/malformed-repo/capsule.json"

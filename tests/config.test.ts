@@ -1,0 +1,54 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { DEFAULT_CONFIG, loadConfig } from '../src/config.js';
+
+async function withConfig(value: unknown, run: (root: string) => Promise<void>): Promise<void> {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'repocapsule-config-'));
+  try {
+    await writeFile(path.join(root, 'repocapsule.config.json'), JSON.stringify(value));
+    await run(root);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+}
+
+for (const [field, value, expected] of [
+  ['schemaVersion', 2, 'schemaVersion must be 1'],
+  ['include', 'README.md', 'include must be an array of strings'],
+  ['include', ['README.md', 1], 'include[1] must be a string'],
+  ['exclude', {}, 'exclude must be an array of strings'],
+  ['commands', 'printf nope', 'commands must be an array of strings'],
+  ['maxFileBytes', '64000', 'maxFileBytes must be a positive finite number'],
+  ['allowHomePaths', 1, 'allowHomePaths must be a boolean']
+] as const) {
+  test(`rejects invalid ${field}`, async () => {
+    await withConfig({ [field]: value }, async (root) => {
+      await assert.rejects(loadConfig(root), (error: Error) => {
+        assert.match(error.message, /repocapsule\.config\.json/);
+        assert.match(error.message, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+        return true;
+      });
+    });
+  });
+}
+
+test('rejects non-object configuration', async () => {
+  await withConfig('invalid', async (root) => {
+    await assert.rejects(loadConfig(root), /repocapsule\.config\.json: configuration must be a JSON object/);
+  });
+});
+
+test('normalizes a valid partial configuration and preserves defaults', async () => {
+  await withConfig({ exclude: ['private/**'], maxFileBytes: 1234 }, async (root) => {
+    const config = await loadConfig(root);
+    assert.deepEqual(config.include, DEFAULT_CONFIG.include);
+    assert.deepEqual(config.exclude, [...DEFAULT_CONFIG.exclude, 'private/**']);
+    assert.deepEqual(config.commands, []);
+    assert.equal(config.schemaVersion, 1);
+    assert.equal(config.maxFileBytes, 1234);
+    assert.equal(config.allowHomePaths, false);
+  });
+});
