@@ -21,6 +21,14 @@ trap 'rm -rf "$tmp_dir"' EXIT
 
 cp -R "$repo_root/fixtures/sample-repo/." "$tmp_dir/"
 
+malformed_root="$tmp_dir/malformed"
+mkdir -p "$malformed_root"
+printf '%s\n' '{"commands":"touch command-ran"}' >"$malformed_root/repocapsule.config.json"
+expect_failure 'repocapsule.config.json: commands must be an array of strings' \
+  scan --root "$malformed_root" --output capsule.json
+test ! -e "$malformed_root/capsule.json"
+test ! -e "$malformed_root/command-ran"
+
 expect_failure 'Unknown option: --bogus' doctor --bogus value
 expect_failure 'Unknown option: --ouptut' scan --ouptut capsule.json
 for option in root output cmd; do
