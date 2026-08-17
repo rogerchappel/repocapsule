@@ -124,6 +124,13 @@ repocapsule init writes repocapsule.config.json:
 
 Keep include patterns narrow for public reports. Add fixtures and failing test files intentionally rather than capturing whole repositories.
 
+All fields are optional; omitted fields use the defaults written by `repocapsule init`.
+Custom `exclude` entries are appended to the built-in safety exclusions. `schemaVersion`
+must be `1`; `include`, `exclude`, and `commands` must be arrays of strings;
+`maxFileBytes` must be a positive finite number; and `allowHomePaths` must be a
+boolean. Invalid configuration stops before scanning, running configured commands,
+or writing output, with an error that identifies the configuration path and field.
+
 ## Verify
 
 ~~~sh
