@@ -76,8 +76,8 @@ export function normalizeConfig(input: unknown, configPath = CONFIG_FILE): Capsu
   const exclude = stringArray(input, 'exclude', configPath);
   const commands = stringArray(input, 'commands', configPath);
   if (input.maxFileBytes !== undefined &&
-      (typeof input.maxFileBytes !== 'number' || !Number.isFinite(input.maxFileBytes) || input.maxFileBytes <= 0)) {
-    throw configError(configPath, 'maxFileBytes must be a positive finite number');
+      (typeof input.maxFileBytes !== 'number' || !Number.isSafeInteger(input.maxFileBytes) || input.maxFileBytes <= 0)) {
+    throw configError(configPath, 'maxFileBytes must be a positive safe integer');
   }
   if (input.allowHomePaths !== undefined && typeof input.allowHomePaths !== 'boolean') {
     throw configError(configPath, 'allowHomePaths must be a boolean');
@@ -89,7 +89,7 @@ export function normalizeConfig(input: unknown, configPath = CONFIG_FILE): Capsu
     exclude: exclude ? [...DEFAULT_CONFIG.exclude, ...exclude] : [...DEFAULT_CONFIG.exclude],
     maxFileBytes: input.maxFileBytes === undefined
       ? DEFAULT_CONFIG.maxFileBytes
-      : Math.floor(input.maxFileBytes as number),
+      : input.maxFileBytes as number,
     allowHomePaths: input.allowHomePaths === undefined ? DEFAULT_CONFIG.allowHomePaths : input.allowHomePaths as boolean,
     commands: commands ?? [...DEFAULT_CONFIG.commands]
   };
