@@ -21,7 +21,11 @@ for (const [field, value, expected] of [
   ['include', ['README.md', 1], 'include[1] must be a string'],
   ['exclude', {}, 'exclude must be an array of strings'],
   ['commands', 'printf nope', 'commands must be an array of strings'],
-  ['maxFileBytes', '64000', 'maxFileBytes must be a positive finite number'],
+  ['maxFileBytes', '64000', 'maxFileBytes must be a positive safe integer'],
+  ['maxFileBytes', 0, 'maxFileBytes must be a positive safe integer'],
+  ['maxFileBytes', 0.5, 'maxFileBytes must be a positive safe integer'],
+  ['maxFileBytes', 1.5, 'maxFileBytes must be a positive safe integer'],
+  ['maxFileBytes', Number.MAX_SAFE_INTEGER + 1, 'maxFileBytes must be a positive safe integer'],
   ['allowHomePaths', 1, 'allowHomePaths must be a boolean']
 ] as const) {
   test(`rejects invalid ${field}`, async () => {
@@ -50,5 +54,12 @@ test('normalizes a valid partial configuration and preserves defaults', async ()
     assert.equal(config.schemaVersion, 1);
     assert.equal(config.maxFileBytes, 1234);
     assert.equal(config.allowHomePaths, false);
+  });
+});
+
+test('preserves the minimum supported maxFileBytes value', async () => {
+  await withConfig({ maxFileBytes: 1 }, async (root) => {
+    const config = await loadConfig(root);
+    assert.equal(config.maxFileBytes, 1);
   });
 });
