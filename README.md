@@ -127,8 +127,9 @@ Keep include patterns narrow for public reports. Add fixtures and failing test f
 All fields are optional; omitted fields use the defaults written by `repocapsule init`.
 Custom `exclude` entries are appended to the built-in safety exclusions. `schemaVersion`
 must be `1`; `include`, `exclude`, and `commands` must be arrays of strings;
-`maxFileBytes` must be a positive finite number; and `allowHomePaths` must be a
-boolean. Invalid configuration stops before scanning, running configured commands,
+and `allowHomePaths` must be a boolean. `maxFileBytes` must be an integer from `1` through
+`9,007,199,254,740,991` (`Number.MAX_SAFE_INTEGER`); fractional, zero, negative,
+and larger values are rejected. Invalid configuration stops before scanning, running configured commands,
 or writing output, with an error that identifies the configuration path and field.
 
 ## Verify
