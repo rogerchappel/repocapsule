@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { createCapsule, stableJson } from '../src/capsule.js';
 import { loadConfig } from '../src/config.js';
@@ -35,4 +37,24 @@ test('captures positive command durations and stable fields independently', asyn
   const firstTotal = first.commands.reduce((s, c) => s + c.durationMs, 0);
   const secondTotal = second.commands.reduce((s, c) => s + c.durationMs, 0);
   assert.ok(firstTotal > 0 && secondTotal > 0);
+});
+
+test('captures content when scanning with the minimum maxFileBytes value', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'repocapsule-min-bytes-'));
+  try {
+    await mkdir(path.join(root, 'src'));
+    await writeFile(path.join(root, 'src', 'example.txt'), 'content');
+    await writeFile(path.join(root, 'repocapsule.config.json'), JSON.stringify({
+      include: ['src/**'],
+      maxFileBytes: 1
+    }));
+
+    const capsule = await createCapsule({ root, config: await loadConfig(root) });
+    const file = capsule.files.find((entry) => entry.path === 'src/example.txt');
+    assert.ok(file);
+    assert.equal(file.truncated, true);
+    assert.equal(file.content, 'c');
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
