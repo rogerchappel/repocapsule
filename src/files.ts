@@ -18,9 +18,13 @@ export async function collectFiles(root: string, config: CapsuleConfig): Promise
     const absolutePath = path.join(root, relativePath);
     const info = await stat(absolutePath);
     const raw = await readFile(absolutePath);
+    if (!isUtf8Text(raw)) {
+      warnings.push('skipped binary file: ' + relativePath);
+      continue;
+    }
     const truncated = raw.byteLength > config.maxFileBytes;
     const slice = truncated ? raw.subarray(0, config.maxFileBytes) : raw;
-    const decoded = slice.toString('utf8');
+    const decoded = decodeUtf8Prefix(slice);
     const redacted = redactText(decoded, config.allowHomePaths);
     redactions.push(...redacted.redactions);
 
@@ -40,6 +44,29 @@ export async function collectFiles(root: string, config: CapsuleConfig): Promise
   files.sort((a, b) => a.path.localeCompare(b.path));
   warnings.sort();
   return { files, redactions, warnings };
+}
+
+const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+
+function isUtf8Text(raw: Buffer): boolean {
+  if (raw.includes(0)) return false;
+  try {
+    utf8Decoder.decode(raw);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function decodeUtf8Prefix(raw: Buffer): string {
+  for (let end = raw.byteLength; end >= Math.max(0, raw.byteLength - 3); end -= 1) {
+    try {
+      return utf8Decoder.decode(raw.subarray(0, end));
+    } catch {
+      // A byte limit may split a multi-byte character; retry at its boundary.
+    }
+  }
+  return '';
 }
 
 async function walk(root: string, current: string): Promise<string[]> {
