@@ -145,7 +145,9 @@ bash scripts/validate.sh
 
 ## Limitations
 
-- Text files only; binary contents are not interpreted.
+- Included files must be valid UTF-8 text without NUL bytes. Binary files are
+  omitted from JSON and Markdown output and reported as
+  `skipped binary file: <path>` warnings.
 - Glob support is intentionally small and focused on common include/exclude patterns.
 - No hosted storage, telemetry, auth, or background daemon.
 - Redaction is a safety net, not a guarantee. Review output before sharing.

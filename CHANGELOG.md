@@ -7,6 +7,11 @@ format and uses semantic versioning when versioned releases are published.
 
 ## [Unreleased]
 
+### Fixed
+
+- Skip binary included files with deterministic warnings instead of rendering
+  replacement-character-corrupted content.
+
 ### Added
 
 - TypeScript CLI with init, scan, record, report, and doctor commands.
