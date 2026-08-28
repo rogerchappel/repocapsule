@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createCapsule, stableJson } from '../src/capsule.js';
@@ -54,6 +54,30 @@ test('captures content when scanning with the minimum maxFileBytes value', async
     assert.ok(file);
     assert.equal(file.truncated, true);
     assert.equal(file.content, 'c');
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('skips binary files while preserving ordinary UTF-8 text', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'repocapsule-binary-'));
+  try {
+    const binaryBytes = JSON.parse(
+      await readFile(path.resolve('tests/fixtures/binary-bytes.json'), 'utf8')
+    ) as number[];
+    await mkdir(path.join(root, 'included'));
+    await writeFile(path.join(root, 'included', 'image.png'), Buffer.from(binaryBytes));
+    await writeFile(path.join(root, 'included', 'notes.txt'), 'Hello, Brisbane — こんにちは\n');
+    await writeFile(path.join(root, 'repocapsule.config.json'), JSON.stringify({
+      include: ['included/**']
+    }));
+
+    const capsule = await createCapsule({ root, config: await loadConfig(root) });
+
+    assert.deepEqual(capsule.files.map((file) => file.path), ['included/notes.txt']);
+    assert.equal(capsule.files[0]?.content, 'Hello, Brisbane — こんにちは\n');
+    assert.deepEqual(capsule.warnings, ['skipped binary file: included/image.png']);
+    assert.equal(stableJson(capsule).includes('\ufffd'), false);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
