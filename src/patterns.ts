@@ -6,16 +6,6 @@ export function matchesPattern(relativePath: string, pattern: string): boolean {
   const path = normalizePath(relativePath);
   const normalizedPattern = normalizePath(pattern);
 
-  if (normalizedPattern.endsWith('/**')) {
-    const prefix = normalizedPattern.slice(0, -3);
-    return path === prefix || path.startsWith(prefix + '/');
-  }
-
-  if (normalizedPattern.startsWith('**/')) {
-    const suffix = normalizedPattern.slice(3);
-    return path === suffix || path.endsWith('/' + suffix);
-  }
-
   if (normalizedPattern.includes('*')) {
     return globToRegExp(normalizedPattern).test(path);
   }
@@ -28,11 +18,27 @@ export function normalizePath(input: string): string {
 }
 
 function globToRegExp(pattern: string): RegExp {
-  const escaped = pattern
-    .split('*')
-    .map(escapeRegExp)
-    .join('[^/]*');
-  return new RegExp('^' + escaped + '$');
+  let source = '';
+
+  for (let index = 0; index < pattern.length;) {
+    if (pattern[index] !== '*') {
+      source += escapeRegExp(pattern[index]!);
+      index += 1;
+    } else if (pattern[index + 1] !== '*') {
+      source += '[^/]*';
+      index += 1;
+    } else {
+      index += 2;
+      if (pattern[index] === '/') {
+        source += '(?:[^/]+/)*';
+        index += 1;
+      } else {
+        source += '.*';
+      }
+    }
+  }
+
+  return new RegExp('^' + source + '$');
 }
 
 function escapeRegExp(input: string): string {
