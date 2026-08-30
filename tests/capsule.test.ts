@@ -82,3 +82,29 @@ test('skips binary files while preserving ordinary UTF-8 text', async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test('applies recursive include and exclude patterns end to end', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'repocapsule-glob-'));
+  try {
+    await mkdir(path.join(root, 'src', 'generated', 'deep'), { recursive: true });
+    await mkdir(path.join(root, 'src', 'lib', 'deep'), { recursive: true });
+    await writeFile(path.join(root, 'src', 'app.ts'), 'root\n');
+    await writeFile(path.join(root, 'src', 'lib', 'deep', 'app.ts'), 'deep\n');
+    await writeFile(path.join(root, 'src', 'generated', 'types.ts'), 'generated\n');
+    await writeFile(path.join(root, 'src', 'generated', 'deep', 'types.ts'), 'generated deep\n');
+    await writeFile(path.join(root, 'src', 'lib', 'app.js'), 'javascript\n');
+    await writeFile(path.join(root, 'repocapsule.config.json'), JSON.stringify({
+      include: ['src/**/*.ts'],
+      exclude: ['src/generated/**/*.ts']
+    }));
+
+    const capsule = await createCapsule({ root, config: await loadConfig(root) });
+
+    assert.deepEqual(capsule.files.map((file) => file.path), [
+      'src/app.ts',
+      'src/lib/deep/app.ts'
+    ]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
