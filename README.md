@@ -59,6 +59,8 @@ repocapsule --version
 ~~~
 
 Options are command-specific. The `record` command is the only command that accepts positional arguments; place its command and arguments after `--`.
+`repocapsule init` creates a new configuration and exits with an error without
+changing the file if `repocapsule.config.json` already exists.
 
 See [examples/bug-report-capsule.md](examples/bug-report-capsule.md) for a maintainer-facing workflow that captures a failing command and reviews the generated files before sharing.
 
@@ -109,7 +111,8 @@ Always inspect capsule JSON and Markdown before attaching them to an issue or ha
 
 ## Configuration
 
-repocapsule init writes repocapsule.config.json:
+`repocapsule init` writes `repocapsule.config.json` only when that file does not
+already exist:
 
 ~~~json
 {
