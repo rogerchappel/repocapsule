@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { DEFAULT_CONFIG, loadConfig } from '../src/config.js';
+import { CONFIG_FILE, DEFAULT_CONFIG, loadConfig, writeDefaultConfig } from '../src/config.js';
 
 async function withConfig(value: unknown, run: (root: string) => Promise<void>): Promise<void> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'repocapsule-config-'));
@@ -62,4 +62,31 @@ test('preserves the minimum supported maxFileBytes value', async () => {
     const config = await loadConfig(root);
     assert.equal(config.maxFileBytes, 1);
   });
+});
+
+test('creates the default configuration in an empty directory', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'repocapsule-init-'));
+  try {
+    const configPath = await writeDefaultConfig(root);
+    assert.equal(configPath, path.join(root, CONFIG_FILE));
+    assert.deepEqual(JSON.parse(await readFile(configPath, 'utf8')), DEFAULT_CONFIG);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('refuses to overwrite an existing configuration', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'repocapsule-init-'));
+  const configPath = path.join(root, CONFIG_FILE);
+  const existing = '{\n  "schemaVersion": 1,\n  "include": ["CUSTOM.md"]\n}\n';
+  try {
+    await writeFile(configPath, existing);
+    await assert.rejects(
+      writeDefaultConfig(root),
+      /repocapsule\.config\.json already exists; refusing to overwrite it/
+    );
+    assert.equal(await readFile(configPath, 'utf8'), existing);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
