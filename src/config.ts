@@ -60,7 +60,17 @@ export async function loadConfig(root: string): Promise<CapsuleConfig> {
 
 export async function writeDefaultConfig(root: string): Promise<string> {
   const configPath = path.join(root, CONFIG_FILE);
-  await writeFile(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2) + '\n', 'utf8');
+  try {
+    await writeFile(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2) + '\n', {
+      encoding: 'utf8',
+      flag: 'wx'
+    });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+      throw new Error(`${configPath} already exists; refusing to overwrite it`);
+    }
+    throw error;
+  }
   return configPath;
 }
 
