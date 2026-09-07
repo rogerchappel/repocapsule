@@ -4,7 +4,8 @@ RepoCapsule is local-first. Agents and maintainers should run it inside the repo
 
 ## Agent Flow
 
-1. Run repocapsule init if the target repo does not have repocapsule.config.json.
+1. Run `repocapsule init` if the target repo does not have
+   `repocapsule.config.json`. Init refuses to replace an existing configuration.
 2. Edit include and exclude patterns until the capsule contains only relevant files.
 3. Run repocapsule scan --markdown .repocapsule/report.md.
 4. Review .repocapsule/capsule.json and .repocapsule/report.md before sharing.
