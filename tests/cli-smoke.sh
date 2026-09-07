@@ -51,6 +51,14 @@ expect_failure 'Unexpected argument for record before --: unexpected' record une
 test ! -e "$tmp_dir/ignored.json"
 test ! -e "$tmp_dir/init-target/repocapsule.config.json"
 
+init_root="$tmp_dir/init-target"
+mkdir -p "$init_root"
+node "$repo_root/dist/src/cli.js" init --root "$init_root" | grep -F 'Wrote repocapsule.config.json' >/dev/null
+test -s "$init_root/repocapsule.config.json"
+cp "$init_root/repocapsule.config.json" "$tmp_dir/initial-config.json"
+expect_failure 'repocapsule.config.json already exists; refusing to overwrite it' init --root "$init_root"
+cmp "$tmp_dir/initial-config.json" "$init_root/repocapsule.config.json"
+
 node "$repo_root/dist/src/cli.js" --help | grep -q '^Usage:'
 node "$repo_root/dist/src/cli.js" --version | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+'
 node "$repo_root/dist/src/cli.js" scan --help | grep -q '^Usage:'
