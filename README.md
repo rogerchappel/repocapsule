@@ -154,8 +154,9 @@ bash scripts/validate.sh
 - Glob support is intentionally small: `*` matches characters within one path segment,
   while `**` matches across directories. A recursive segment such as `**/` matches zero
   or more directories, so `src/**/*.ts` includes both `src/app.ts` and
-  `src/lib/deep/app.ts`. Other glob operators such as `?`, character classes, and braces
-  are treated literally.
+  `src/lib/deep/app.ts`. Unsupported operators (`?`, character classes, and braces) and
+  malformed `**` placement are rejected as non-matching patterns. Literal paths without
+  glob operators remain exact matches, including filenames containing those characters.
 - No hosted storage, telemetry, auth, or background daemon.
 - Redaction is a safety net, not a guarantee. Review output before sharing.
 

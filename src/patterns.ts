@@ -7,6 +7,7 @@ export function matchesPattern(relativePath: string, pattern: string): boolean {
   const normalizedPattern = normalizePath(pattern);
 
   if (normalizedPattern.includes('*')) {
+    if (!isSupportedGlob(normalizedPattern)) return false;
     return globToRegExp(normalizedPattern).test(path);
   }
 
@@ -15,6 +16,20 @@ export function matchesPattern(relativePath: string, pattern: string): boolean {
 
 export function normalizePath(input: string): string {
   return input.replaceAll('\\\\', '/').replace(/^\.\//, '');
+}
+
+function isSupportedGlob(pattern: string): boolean {
+  for (let index = 0; index < pattern.length; index += 1) {
+    const char = pattern[index]!;
+    if (char === '?' || char === '[' || char === ']' || char === '{' || char === '}') return false;
+    if (char === '*' && pattern[index + 1] === '*') {
+      if (index > 0 && pattern[index - 1] !== '/') return false;
+      const after = pattern[index + 2];
+      if (after !== undefined && after !== '/') return false;
+      index += 1;
+    }
+  }
+  return true;
 }
 
 function globToRegExp(pattern: string): RegExp {
